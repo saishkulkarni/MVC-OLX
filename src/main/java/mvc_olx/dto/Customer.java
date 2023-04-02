@@ -3,6 +3,7 @@ package mvc_olx.dto;
 import java.sql.Date;
 import java.util.List;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -31,7 +32,7 @@ public class Customer {
 	double wallet;
 	String address;
 
-	@OneToMany
-	List<Product> list;
+	@OneToMany(cascade = CascadeType.ALL)
+	List<Product> products;
 
 }

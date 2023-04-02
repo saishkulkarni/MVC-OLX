@@ -9,9 +9,11 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.ModelAndView;
 
 import mvc_olx.dto.Customer;
+import mvc_olx.dto.Product;
 
 @Component
 public class CustomerDao {
+
 	@Autowired
 	EntityManager manager;
 
@@ -28,5 +30,16 @@ public class CustomerDao {
 	public Customer find(int cid)
 	{
 		return manager.find(Customer.class, cid);
+	}
+
+	public void update(Customer customer) {
+		manager.getTransaction().begin();
+		manager.merge(customer);
+		manager.getTransaction().commit();
+	}
+	
+	public List<Product> fetchProduct()
+	{
+		return manager.createQuery("select x from Product x").getResultList();
 	}
 }
