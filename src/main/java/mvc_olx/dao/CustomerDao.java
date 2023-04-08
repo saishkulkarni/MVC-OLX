@@ -6,7 +6,6 @@ import javax.persistence.EntityManager;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.ModelAndView;
 
 import mvc_olx.dto.Customer;
 import mvc_olx.dto.Product;
@@ -26,9 +25,8 @@ public class CustomerDao {
 		manager.persist(customer);
 		manager.getTransaction().commit();
 	}
-	
-	public Customer find(int cid)
-	{
+
+	public Customer find(int cid) {
 		return manager.find(Customer.class, cid);
 	}
 
@@ -37,9 +35,13 @@ public class CustomerDao {
 		manager.merge(customer);
 		manager.getTransaction().commit();
 	}
-	
-	public List<Product> fetchProduct()
-	{
+
+	public List<Product> fetchProduct() {
 		return manager.createQuery("select x from Product x").getResultList();
 	}
+
+	public Product findProduct(int pid) {
+		return manager.find(Product.class, pid);
+	}
+
 }

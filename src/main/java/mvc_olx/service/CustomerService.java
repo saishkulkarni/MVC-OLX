@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpSession;
-import javax.servlet.http.Part;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -25,7 +24,7 @@ public class CustomerService {
 
 	@Autowired
 	Product product;
-	
+
 	@Autowired
 	Customer customer;
 
@@ -86,91 +85,120 @@ public class CustomerService {
 	}
 
 	public ModelAndView logout(HttpSession session) {
-		ModelAndView andView=new ModelAndView("Home.jsp");
-		if(session.getAttribute("customer")==null)
-		{
+		ModelAndView andView = new ModelAndView("Home.jsp");
+		if (session.getAttribute("customer") == null) {
 			andView.addObject("msg", "Session Expired");
-		}
-		else {
-		session.invalidate();
-		andView.addObject("msg", "Logout Success");
+		} else {
+			session.invalidate();
+			andView.addObject("msg", "Logout Success");
 		}
 		return andView;
 	}
 
-	public ModelAndView addProduct(String pname, double pprice, MultipartFile pimage,HttpSession session) throws IOException {
-		Customer customer=(Customer) session.getAttribute("customer");
-		
+	public ModelAndView addProduct(String pname, double pprice, MultipartFile pimage, HttpSession session)
+			throws IOException {
+		Customer customer = (Customer) session.getAttribute("customer");
+
 		product.setName(pname);
 		product.setPrice(pprice);
-		product.setSold(true);
-		
+		product.setSold(customer.getId());
+
 		byte[] pic = null;
 		if (pimage != null) {
 			InputStream inputStream = pimage.getInputStream();
 			pic = new byte[inputStream.available()];
 			inputStream.read(pic);
 		}
-		
+
 		product.setImage(pic);
-		
-		List<Product> list=customer.getProducts();
-		if(list==null)
-		{
-			list=new ArrayList<Product>();
+
+		List<Product> list = customer.getProducts();
+		if (list == null) {
+			list = new ArrayList<Product>();
 		}
 		list.add(product);
-		
+
 		customer.setProducts(list);
-			
+
 		dao.update(customer);
-		
-		ModelAndView andView=new ModelAndView("Home.jsp");
-		andView.addObject("msg","Added Product for Sale");
-		
+
+		ModelAndView andView = new ModelAndView("Home.jsp");
+		andView.addObject("msg", "Added Product for Sale");
+
 		return andView;
 	}
 
 	public ModelAndView addMoney(double money, HttpSession session) {
-		Customer customer=(Customer) session.getAttribute("customer");
-		customer.setWallet(customer.getWallet()+money);
+		Customer customer = (Customer) session.getAttribute("customer");
+		customer.setWallet(customer.getWallet() + money);
 		dao.update(customer);
-		
-		ModelAndView andView=new ModelAndView("Home.jsp");
-		andView.addObject("msg","Added Money in wallet");
-		
+
+		ModelAndView andView = new ModelAndView("Home.jsp");
+		andView.addObject("msg", "Added Money in wallet");
+
 		return andView;
 	}
 
 	public ModelAndView displayProducts(HttpSession session) {
-		
-		ModelAndView andView=new ModelAndView();
-		
+
+		ModelAndView andView = new ModelAndView();
+
 		Customer customer = (Customer) session.getAttribute("customer");
-		List<Product> products1 = dao.fetchProduct();
-		List<Product> products3 = new ArrayList<Product>();
+
+		List<Product> products = dao.fetchProduct();
+		List<Product> products1 = new ArrayList<>();
+		for (Product product : products) {
+			if (product.getBought() == 0) {
+				products1.add(product);
+			}
+		}
 
 		if (customer != null) {
 			List<Product> products2 = customer.getProducts();
-			for (Product product1 : products1) {
-				for (Product product2 : products2) {
-			if (product1 != product2) {
-				products3.add(product1);
-			}
-				}
-			}
-		} else {
-			products3 = products1;
+			if(products2!=null)
+			products1.removeAll(products2);
 		}
 
-		if (products3.isEmpty()) {
-			andView.addObject("msg","No Products You can Purchase");
+		if (products1.isEmpty()) {
+			andView.addObject("msg", "No Products You can Purchase");
 			andView.setViewName("Home.jsp");
-			} else {
-			andView.addObject("list", products3);
+		} else {
+			andView.addObject("list", products1);
 			andView.setViewName("Buy.jsp");
 		}
-		
+
+		return andView;
+	}
+
+	public ModelAndView buyProduct(HttpSession session, int id) {
+		ModelAndView andView = new ModelAndView();
+		Customer customer = (Customer) session.getAttribute("customer");
+		if (customer == null) {
+			andView.setViewName("Login.jsp");
+			andView.addObject("msg", "First Login Then only You can Buy");
+		} else {
+			Product product = dao.findProduct(id);
+
+			if (customer.getWallet() < product.getPrice()) {
+				andView.addObject("msg", "Insufficient Balance");
+				andView.setViewName("Home.jsp");
+			} else {
+				customer.setWallet(customer.getWallet() - product.getPrice());
+				Customer customer2 = dao.find(product.getSold());
+				customer2.setWallet(customer2.getWallet() + product.getPrice());
+
+				product.setBought(customer.getId());
+				List<Product> products = customer.getProducts();
+				products.add(product);
+
+				dao.update(customer);
+				dao.update(customer2);
+				andView.setViewName("Home.jsp");
+				andView.addObject("msg", "Purchased Successfully and will be delivered to " + customer.getAddress());
+
+			}
+		}
+
 		return andView;
 	}
 

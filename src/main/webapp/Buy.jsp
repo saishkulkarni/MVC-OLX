@@ -35,7 +35,7 @@
 				%> <img height="200" width="500" alt="unknown"
 				src="data:image/jpeg;base64,<%=base64%>">
 			</th>
-			<th><button>Buy</button></th>
+			<th><a href="buy?id=<%=product.getId()%>"><button>Buy</button></a></th>
 		</tr>
 		<%
 		}

@@ -22,6 +22,6 @@ public class Product {
 	double price;
 	@Lob
 	byte[] image;
-	boolean bought;
-	boolean sold;
+	int bought;
+	int sold;
 }

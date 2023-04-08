@@ -47,17 +47,20 @@ public class CustomerController {
 			@RequestParam MultipartFile pimage, HttpSession session) throws IOException {
 		return service.addProduct(pname, pprice, pimage, session);
 	}
-	
+
 	@RequestMapping("addmoney")
-	public ModelAndView addMoney(@RequestParam double money,HttpSession session)
-	{
-		return service.addMoney(money,session);
+	public ModelAndView addMoney(@RequestParam double money, HttpSession session) {
+		return service.addMoney(money, session);
 	}
-	
+
 	@RequestMapping("displayproducts")
-	public ModelAndView displayProducts(HttpSession session)
-	{
+	public ModelAndView displayProducts(HttpSession session) {
 		return service.displayProducts(session);
+	}
+
+	@RequestMapping("buy")
+	public ModelAndView buyProducts(@RequestParam int id, HttpSession session) {
+		return service.buyProduct(session, id);
 	}
 
 }
